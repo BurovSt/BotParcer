@@ -20,13 +20,16 @@ driver.get(url)  # Обращается к сайду
 
 
 # ПОДКЛЮЧЕНИЕ ГУГЛ ТАБЛИЦЫ
-credentials_file = 'D:\\PYCHARMPROJECT\\BotParcer\\secret.json'     # Секрет ключ для подключения таблицы
+credentials_file = '/Users/mac/PycharmProjects/BotParcer/secret.json'     # Секрет ключ для подключения таблицы
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
 client = gspread.authorize(credentials)
 sheet_id = '1b0MRV4EaIqt8Sntjt8iGaDoATF7cXsfysQyrDgqq77g'   # ИД Таблицы , берется прямо с ссылки на таблицу
 sheet = client.open_by_key(sheet_id).sheet1
 range_name = 'test_list' # указываем лист на котором будет работать
+sheet_id2 = '1d7exhXfyYod4uSRMzPONWcZIpMHN0Zi7YmTA8Sp2yuE'
+sheet2 = client.open_by_key(sheet_id2).sheet1
+
 
 try:
     # Найти поле для ввода логина
@@ -110,6 +113,7 @@ try:
     choose_all_orders.click()
 
     time.sleep(5)
+    x = sheet.get(range_name=)
     order_table = driver.find_element(By.XPATH, '/html/body/div[1]/section/div[3]/form/table')
     if order_table:
         order_tbody = driver.find_element(By.XPATH, '/html/body/div[1]/section/div[3]/form/table/tbody')
