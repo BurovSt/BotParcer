@@ -20,7 +20,7 @@ driver.get(url)  # Обращается к сайду
 
 
 # ПОДКЛЮЧЕНИЕ ГУГЛ ТАБЛИЦЫ
-credentials_file = '/Users/mac/PycharmProjects/BotParcer/secret.json'     # Секрет ключ для подключения таблицы
+credentials_file = get_config()['credential'].get("cred", "")     # Секрет ключ для подключения таблицы
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials_file, scope)
 client = gspread.authorize(credentials)
@@ -96,11 +96,11 @@ try:
                 time.sleep(1)  # В каждом шаге итератора мы делаем задержку, так как может быть ошибка
 
                 # выравниваем таблицу по столбцу А
-                sheet.update(range_name='A1', values=all_data)
+                sheet2.update(range_name='A1', values=all_data)
             # Удаляем не нужные столбцы
     columns_to_delete = [2, 4, 5, 7, 8, 9, 12]  # Индексы колонок в Гугл таблицах считаються НЕ с "0", а с "1"
     for col_index in sorted(columns_to_delete, reverse=True):
-        sheet.delete_columns(col_index)
+        sheet2.delete_columns(col_index)
     # else:
     #     driver.quit()
 
@@ -113,38 +113,45 @@ try:
     choose_all_orders.click()
 
     time.sleep(5)
-    x = sheet.get(range_name=)
+
     order_table = driver.find_element(By.XPATH, '/html/body/div[1]/section/div[3]/form/table')
     if order_table:
         order_tbody = driver.find_element(By.XPATH, '/html/body/div[1]/section/div[3]/form/table/tbody')
         if order_tbody:
-            # Если тело таблицу найдено начинаем копировать таблицу
-            if order_tbody:
-                rows = order_tbody.find_elements(By.TAG_NAME, 'tr')
+            rows = order_tbody.find_elements(By.TAG_NAME, 'tr')
 
-                order_all_data = []
-                counter_order = 0
-                for row in rows:
-                    if counter_order <= counter_table - 1:      # Копируем таблицу, пока количество строк не совпадет с предыдущей
-                        cells = row.find_elements(By.XPATH, './/td | .//th')
-                        cell_texts = [cell.text.strip() for cell in cells]
-                        order_all_data.append(cell_texts)
-                        counter_order += 1
-                        # выравниваем по столбцу А
-                        sheet.update(range_name='H1', values=order_all_data)
-                        time.sleep(1)
+            order_all_data = []
+            counter_order = 0
+            for row in rows:
+                if counter_order <= counter_table - 1:      # Копируем таблицу, пока количество строк не совпадет с предыдущей
+                    cells = row.find_elements(By.XPATH, './/td | .//th')
+                    cell_texts = [cell.text.strip() for cell in cells]
+                    order_all_data.append(cell_texts)
+                    counter_order += 1
+                    # выравниваем по столбцу А
+                    sheet2.update(range_name='H1', values=order_all_data)
+                    time.sleep(1)
 
         # Удаляем не нужные столбцы
     columns_to_delete = [9, 10, 11, 12, 13, 15, 16, 18,
                          19, 20, 21, 22, 23, 24, 25, 26, 27,
                          28, 29, 30, 31, 32, 33, 34, 35]  # Индексы колонок в Гугл таблицах считаються НЕ с "0", а с "1"
     for col_index in sorted(columns_to_delete, reverse=True):
-        sheet.delete_columns(col_index)
+        sheet2.delete_columns(col_index)
 
+    order_numbers = sheet.col_values(1)
+    order_numbers2 = sheet2.col_values(1)
+    missing_numbers = [num for num in order_numbers2 if num not in order_numbers]
+    missing_numbers.sort()
+    new_row = 1
+    for num in missing_numbers:
+        missing_index = order_numbers2.index(num) + 1
+        missing_row = sheet2.row_values(missing_index)
+        sheet.insert_row(missing_row, 1)
+
+    sheet2.clear()
 finally:
 
     driver.quit()
-
-
 
 
